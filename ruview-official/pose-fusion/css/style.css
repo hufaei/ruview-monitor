@@ -253,6 +253,13 @@ body {
   gap: 6px;
 }
 
+.panel-help {
+  margin: -4px 0 10px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
 /* === CSI Heatmap === */
 .csi-canvas-wrapper {
   position: relative;

@@ -32,25 +32,25 @@ export class SensingTab {
 
   _buildDOM() {
     this.container.innerHTML = `
-      <h2>Live WiFi Sensing · 实时 WiFi 感知</h2>
+      <h2>实时 WiFi 感知</h2>
 
       <!-- Data-source status banner — updated by _onStateChange -->
       <div id="sensingSourceBanner" class="sensing-source-banner sensing-source-reconnecting"
            role="status" aria-live="polite">
-        RECONNECTING...
+        正在连接数据源…
       </div>
 
       <div class="sensing-layout">
         <!-- 3D viewport -->
         <div class="sensing-viewport" id="sensingViewport">
-          <div class="sensing-loading">Loading 3D engine...</div>
+          <div class="sensing-loading">正在加载 3D 信号场…</div>
         </div>
 
         <!-- Side panel -->
         <div class="sensing-panel">
           <!-- Connection -->
           <div class="sensing-card">
-            <div class="sensing-card-title">Connection · 连接状态</div>
+            <div class="sensing-card-title">连接状态</div>
             <div class="sensing-connection">
               <span class="sensing-dot" id="sensingDot"></span>
               <span id="sensingState">Connecting...</span>
@@ -60,32 +60,32 @@ export class SensingTab {
 
           <!-- RSSI -->
           <div class="sensing-card">
-            <div class="sensing-card-title">RSSI</div>
+            <div class="sensing-card-title">信号强度</div>
             <div class="sensing-big-value" id="sensingRssi">-- dBm</div>
             <canvas id="sensingSparkline" width="200" height="40"></canvas>
           </div>
 
           <!-- Signal Features -->
           <div class="sensing-card">
-            <div class="sensing-card-title">Signal Features · 信号特征</div>
+            <div class="sensing-card-title">信号特征</div>
             <div class="sensing-meters">
               <div class="sensing-meter">
-                <label>Variance · 方差</label>
+                <label>方差</label>
                 <div class="sensing-bar"><div class="sensing-bar-fill" id="barVariance"></div></div>
                 <span class="sensing-meter-val" id="valVariance">0</span>
               </div>
               <div class="sensing-meter">
-                <label>Motion Band · 运动频带</label>
+                <label>运动频带</label>
                 <div class="sensing-bar"><div class="sensing-bar-fill motion" id="barMotion"></div></div>
                 <span class="sensing-meter-val" id="valMotion">0</span>
               </div>
               <div class="sensing-meter">
-                <label>Breathing Band · 呼吸频带</label>
+                <label>呼吸频带</label>
                 <div class="sensing-bar"><div class="sensing-bar-fill breath" id="barBreath"></div></div>
                 <span class="sensing-meter-val" id="valBreath">0</span>
               </div>
               <div class="sensing-meter">
-                <label>Spectral Power · 频谱功率</label>
+                <label>频谱功率</label>
                 <div class="sensing-bar"><div class="sensing-bar-fill spectral" id="barSpectral"></div></div>
                 <span class="sensing-meter-val" id="valSpectral">0</span>
               </div>
@@ -94,11 +94,11 @@ export class SensingTab {
 
           <!-- Classification -->
           <div class="sensing-card">
-            <div class="sensing-card-title">Classification · 状态分类</div>
+            <div class="sensing-card-title">状态分类</div>
             <div class="sensing-classification" id="sensingClassification">
-              <div class="sensing-class-label" id="classLabel">ABSENT</div>
+              <div class="sensing-class-label" id="classLabel">未检测到人体</div>
               <div class="sensing-confidence">
-                <label>Confidence · 置信度</label>
+                <label>置信度</label>
                 <div class="sensing-bar"><div class="sensing-bar-fill confidence" id="barConfidence"></div></div>
                 <span class="sensing-meter-val" id="valConfidence">0%</span>
               </div>
@@ -107,7 +107,7 @@ export class SensingTab {
 
           <!-- Setup info -->
           <div class="sensing-card">
-            <div class="sensing-card-title">About This Data · 数据说明</div>
+            <div class="sensing-card-title">数据说明</div>
             <p class="sensing-about-text">
               指标由 WiFi Channel State Information（CSI，信道状态信息）计算。
               <strong><span id="sensingNodeCount">0</span> 个 ESP32 节点</strong>可提供存在、呼吸估计与大幅运动演示；
@@ -117,22 +117,22 @@ export class SensingTab {
 
           <!-- Node Status -->
           <div class="sensing-card" id="sensingNodeCards">
-            <div class="sensing-card-title">NODE STATUS · 节点状态</div>
+            <div class="sensing-card-title">节点状态</div>
             <div id="nodeStatusContainer"></div>
           </div>
 
           <!-- Extra info -->
           <div class="sensing-card">
-            <div class="sensing-card-title">Details · 详细指标</div>
+            <div class="sensing-card-title">详细指标</div>
             <div class="sensing-details">
               <div class="sensing-detail-row">
-                <span>Dominant Freq · 主频</span><span id="valDomFreq">0 Hz</span>
+                <span>主频</span><span id="valDomFreq">0 Hz</span>
               </div>
               <div class="sensing-detail-row">
-                <span>Change Points · 变化点</span><span id="valChangePoints">0</span>
+                <span>变化点</span><span id="valChangePoints">0</span>
               </div>
               <div class="sensing-detail-row">
-                <span>Sample Rate · 采样来源</span><span id="valSampleRate">--</span>
+                <span>采样来源</span><span id="valSampleRate">--</span>
               </div>
             </div>
           </div>
@@ -177,7 +177,7 @@ export class SensingTab {
       });
     } catch (e) {
       console.error('[SensingTab] Failed to init splat renderer:', e);
-      viewport.innerHTML = '<div class="sensing-loading">3D rendering unavailable</div>';
+      viewport.innerHTML = '<div class="sensing-loading">当前浏览器无法显示 3D 信号场</div>';
     }
   }
 
@@ -259,9 +259,14 @@ export class SensingTab {
     // Classification
     const label = this.container.querySelector('#classLabel');
     if (label) {
-      const level = (c.motion_level || 'absent').toUpperCase();
-      label.textContent = level;
-      label.className = 'sensing-class-label ' + (c.motion_level || 'absent');
+      const level = c.motion_level || 'absent';
+      const levelLabels = {
+        absent: '未检测到人体',
+        present_still: '检测到静止人体',
+        active: '检测到活动',
+      };
+      label.textContent = levelLabels[level] || '状态未知';
+      label.className = 'sensing-class-label ' + level;
     }
 
     const confPct = ((c.confidence || 0) * 100).toFixed(0);
@@ -332,7 +337,7 @@ export class SensingTab {
       container.textContent = '';
       const msg = document.createElement('div');
       msg.style.cssText = 'color:#888;font-size:12px;padding:8px;';
-      msg.textContent = 'No nodes detected';
+      msg.textContent = '暂未检测到节点';
       container.appendChild(msg);
       return;
     }
@@ -349,20 +354,25 @@ export class SensingTab {
       idCol.style.minWidth = '50px';
       const nameEl = document.createElement('div');
       nameEl.style.cssText = `font-size:11px;font-weight:600;color:${color};`;
-      nameEl.textContent = 'Node ' + nf.node_id;
+      nameEl.textContent = '节点 ' + nf.node_id;
       const statusEl = document.createElement('div');
       statusEl.style.cssText = `font-size:9px;color:${statusColor};`;
-      statusEl.textContent = nf.stale ? 'STALE' : 'ACTIVE';
+      statusEl.textContent = nf.stale ? '数据已过期' : '正在上报';
       idCol.appendChild(nameEl);
       idCol.appendChild(statusEl);
 
       const metricsCol = document.createElement('div');
       metricsCol.style.cssText = 'flex:1;font-size:10px;color:#aaa;';
-      metricsCol.textContent = (nf.rssi_dbm || -80).toFixed(0) + ' dBm · var ' + (nf.features?.variance || 0).toFixed(1);
+      metricsCol.textContent = (nf.rssi_dbm || -80).toFixed(0) + ' dBm · 方差 ' + (nf.features?.variance || 0).toFixed(1);
 
       const classCol = document.createElement('div');
       classCol.style.cssText = 'font-size:10px;font-weight:600;color:#ccc;';
-      const motion = (nf.classification?.motion_level || 'absent').toUpperCase();
+      const motionLevel = nf.classification?.motion_level || 'absent';
+      const motion = {
+        absent: '未检出',
+        present_still: '静止',
+        active: '活动',
+      }[motionLevel] || '未知';
       const conf = ((nf.classification?.confidence || 0) * 100).toFixed(0);
       classCol.textContent = motion + ' ' + conf + '%';
 

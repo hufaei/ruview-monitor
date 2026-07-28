@@ -99,7 +99,7 @@ function init() {
   // Pause
   pauseBtn.addEventListener('click', () => {
     isPaused = !isPaused;
-    pauseBtn.textContent = isPaused ? '▶ Resume' : '⏸ Pause';
+    pauseBtn.textContent = isPaused ? '▶ 继续' : '⏸ 暂停';
     pauseBtn.classList.toggle('active', isPaused);
   });
 
@@ -113,9 +113,9 @@ function init() {
   connectWsBtn.addEventListener('click', async () => {
     const url = wsUrlInput.value.trim();
     if (!url) return;
-    connectWsBtn.textContent = 'Connecting...';
+    connectWsBtn.textContent = '正在连接…';
     const ok = await csiSimulator.connectLive(url);
-    connectWsBtn.textContent = ok ? '✓ Connected' : 'Connect';
+    connectWsBtn.textContent = ok ? '✓ 已连接' : '连接';
     if (ok) {
       connectWsBtn.classList.add('active');
     }
@@ -130,8 +130,8 @@ function init() {
     const backendEl = document.getElementById('cnn-backend');
     if (backendEl) {
       backendEl.textContent = ok && visualCnn.useRuVector
-        ? `RuVector WASM v${visualCnn.rvModule.version()} — 6 attention mechanisms`
-        : 'ruvector-cnn (JS fallback)';
+        ? `RuVector WASM v${visualCnn.rvModule.version()} · 六步融合`
+        : 'RuVector JavaScript 兼容模式';
     }
   });
   csiCnn.tryLoadWasm(wasmBase);
@@ -141,9 +141,9 @@ function init() {
   if (wsUrlInput) wsUrlInput.value = defaultWsUrl;
   csiSimulator.connectLive(defaultWsUrl).then(ok => {
     if (ok && connectWsBtn) {
-      connectWsBtn.textContent = '✓ Live ESP32';
+      connectWsBtn.textContent = '✓ ESP32 实时数据';
       connectWsBtn.classList.add('active');
-      statusLabel.textContent = 'LIVE CSI';
+      statusLabel.textContent = 'CSI 实时';
       statusDot.classList.remove('offline');
     }
   });
@@ -160,11 +160,11 @@ async function startCamera() {
   const ok = await videoCapture.start();
   if (ok) {
     statusDot.classList.remove('offline');
-    statusLabel.textContent = 'LIVE';
+    statusLabel.textContent = '摄像头实时';
     resizeCanvases();
   } else {
     cameraPrompt.style.display = 'flex';
-    cameraPrompt.querySelector('p').textContent = 'Camera access denied. Try CSI-only mode.';
+    cameraPrompt.querySelector('p').textContent = '未获得摄像头权限。你仍可切换到“仅 WiFi”查看模拟感知。';
   }
 }
 
@@ -179,7 +179,7 @@ function updateModeUI() {
   }
 
   // Update mode label in both the overlay and the camera prompt
-  const labelMap = { dual: 'DUAL FUSION', video: 'VIDEO ONLY', csi: 'CSI ONLY' };
+  const labelMap = { dual: '视频 + WiFi', video: '仅视频', csi: '仅 WiFi' };
   const modeLabel = document.getElementById('mode-label');
   const promptLabel = document.getElementById('prompt-mode-label');
   if (modeLabel) modeLabel.textContent = labelMap[mode] || mode;
@@ -390,11 +390,11 @@ function updateRssi(dbm) {
 
   // Quality label
   let quality;
-  if (clamped > -50) quality = 'Excellent';
-  else if (clamped > -60) quality = 'Good';
-  else if (clamped > -70) quality = 'Fair';
-  else if (clamped > -80) quality = 'Weak';
-  else quality = 'Poor';
+  if (clamped > -50) quality = '很强';
+  else if (clamped > -60) quality = '良好';
+  else if (clamped > -70) quality = '一般';
+  else if (clamped > -80) quality = '较弱';
+  else quality = '很弱';
   rssiQualityEl.textContent = quality;
 
   // Color the dBm value based on quality

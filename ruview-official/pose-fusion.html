@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RuView — Dual-Modal Pose Estimation</title>
-  <link rel="stylesheet" href="pose-fusion/css/style.css?v=13">
+  <link rel="stylesheet" href="pose-fusion/css/style.css?v=14">
 </head>
 <body>
 
@@ -12,17 +12,17 @@
   <header class="header">
     <div class="header-left">
       <div class="logo"><span class="pi">&pi;</span> RuView</div>
-      <div class="header-title">Dual-Modal Pose Estimation — Live Video + WiFi CSI Fusion</div>
+      <div class="header-title">视频与 WiFi 融合姿态</div>
     </div>
     <div class="header-right">
       <select id="mode-select" class="mode-select">
-        <option value="dual">Dual Mode (Video + CSI)</option>
-        <option value="video">Video Only</option>
-        <option value="csi">CSI Only (WiFi)</option>
+        <option value="dual">视频 + WiFi</option>
+        <option value="video">仅视频</option>
+        <option value="csi">仅 WiFi</option>
       </select>
       <div class="status-badge">
         <span id="status-dot" class="status-dot offline"></span>
-        <span id="status-label">READY</span>
+        <span id="status-label">准备就绪</span>
       </div>
       <span id="fps-display" class="fps-badge">-- FPS</span>
       <a href="index.html" class="back-link">&larr; Dashboard</a>
@@ -37,13 +37,12 @@
     <div class="video-panel">
       <video id="webcam" autoplay playsinline muted></video>
       <canvas id="skeleton-canvas"></canvas>
-      <div class="video-overlay-label" id="mode-label">DUAL FUSION</div>
+      <div class="video-overlay-label" id="mode-label">视频 + WiFi</div>
 
       <div id="camera-prompt" class="camera-prompt">
-        <div class="camera-prompt-label" id="prompt-mode-label">DUAL FUSION</div>
-        <p>Enable your webcam for live video pose estimation.<br>
-           Or switch to <strong>CSI Only</strong> mode for WiFi-based sensing.</p>
-        <button id="start-camera-btn">Enable Camera</button>
+        <div class="camera-prompt-label" id="prompt-mode-label">视频 + WiFi</div>
+        <p>启用摄像头可观察视频姿态；也可切换到<strong>仅 WiFi</strong>查看模拟感知。</p>
+        <button id="start-camera-btn">启用摄像头</button>
       </div>
     </div>
 
@@ -52,40 +51,43 @@
 
       <!-- Fusion Confidence -->
       <div class="panel">
-        <div class="panel-title">&#9670; Fusion Confidence</div>
+        <div class="panel-title">&#9670; 融合置信度</div>
+        <p class="panel-help">摄像头、WiFi 及最终融合结果各自的可信程度。</p>
         <div class="fusion-bars">
           <div class="bar-row">
-            <span class="bar-label">Video</span>
+            <span class="bar-label">摄像头</span>
             <div class="bar-track"><div class="bar-fill video" id="video-bar" style="width:0%"></div></div>
             <span class="bar-value" id="video-bar-val">0%</span>
           </div>
           <div class="bar-row">
-            <span class="bar-label">CSI</span>
+            <span class="bar-label">WiFi</span>
             <div class="bar-track"><div class="bar-fill csi" id="csi-bar" style="width:0%"></div></div>
             <span class="bar-value" id="csi-bar-val">0%</span>
           </div>
           <div class="bar-row">
-            <span class="bar-label">Fused</span>
+            <span class="bar-label">融合结果</span>
             <div class="bar-track"><div class="bar-fill fused" id="fused-bar" style="width:0%"></div></div>
             <span class="bar-value" id="fused-bar-val">0%</span>
           </div>
         </div>
         <div style="margin-top:8px; font-size:10px; color:var(--text-label)">
-          Cross-modal: <span id="cross-modal-sim" style="color:var(--green-glow)">0.000</span>
+          两类数据的一致性：<span id="cross-modal-sim" style="color:var(--green-glow)">0.000</span>
         </div>
       </div>
 
       <!-- CSI Heatmap -->
       <div class="panel">
-        <div class="panel-title">&#9670; CSI Amplitude Heatmap</div>
+        <div class="panel-title">&#9670; CSI 振幅热图</div>
+        <p class="panel-help">颜色表示各个 WiFi 子载波的信号强弱变化。</p>
         <div class="csi-canvas-wrapper">
           <canvas id="csi-canvas" width="320" height="100"></canvas>
         </div>
       </div>
 
-      <!-- RSSI Signal Strength -->
+      <!-- Signal strength -->
       <div class="panel">
-        <div class="panel-title">&#9670; RSSI Signal Strength</div>
+        <div class="panel-title">&#9670; 信号强度</div>
+        <p class="panel-help">单位为 dBm，数值越接近 0，通常表示接收信号越强。</p>
         <div class="rssi-row">
           <div class="rssi-gauge">
             <div class="rssi-bar-track">
@@ -102,7 +104,8 @@
 
       <!-- Embedding Space -->
       <div class="panel">
-        <div class="panel-title">&#9670; Embedding Space (2D Projection)</div>
+        <div class="panel-title">&#9670; 特征分布</div>
+        <p class="panel-help">把视频与 WiFi 转成可比较的数字特征后，投影到二维平面。</p>
         <div class="embedding-canvas-wrapper">
           <canvas id="embedding-canvas" width="320" height="100"></canvas>
         </div>
@@ -110,71 +113,73 @@
 
       <!-- RuVector Attention Pipeline -->
       <div class="panel">
-        <div class="panel-title">&#9670; RuVector WASM Attention Pipeline</div>
+        <div class="panel-title">&#9670; RuVector 融合步骤</div>
+        <p class="panel-help">算法内部的六步特征融合过程，不代表新增了六种传感器数据。</p>
         <div class="rv-pipeline">
-          <div class="rv-stage" id="rv-flash">Flash</div>
+          <div class="rv-stage" id="rv-flash">快速</div>
           <div class="rv-arrow">&rarr;</div>
-          <div class="rv-stage" id="rv-mha">MHA</div>
+          <div class="rv-stage" id="rv-mha">多头</div>
           <div class="rv-arrow">&rarr;</div>
-          <div class="rv-stage" id="rv-hyp">Hyper</div>
+          <div class="rv-stage" id="rv-hyp">曲率</div>
           <div class="rv-arrow">&rarr;</div>
-          <div class="rv-stage" id="rv-lin">Linear</div>
+          <div class="rv-stage" id="rv-lin">线性</div>
           <div class="rv-arrow">&rarr;</div>
-          <div class="rv-stage" id="rv-moe">MoE</div>
+          <div class="rv-stage" id="rv-moe">混合</div>
           <div class="rv-arrow">&rarr;</div>
-          <div class="rv-stage" id="rv-lg">L+G</div>
+          <div class="rv-stage" id="rv-lg">局部+全局</div>
         </div>
         <div class="rv-stats">
-          <span>Energy: <span id="rv-energy" style="color:var(--green-glow)">--</span></span>
-          <span>Refinement: <span id="rv-refine" style="color:var(--cyan)">--</span></span>
-          <span>Pose Impact: <span id="rv-impact" style="color:var(--amber)">--</span></span>
+          <span>特征能量：<span id="rv-energy" style="color:var(--green-glow)">--</span></span>
+          <span>修正幅度：<span id="rv-refine" style="color:var(--cyan)">--</span></span>
+          <span>姿态影响：<span id="rv-impact" style="color:var(--amber)">--</span></span>
         </div>
       </div>
 
       <!-- Latency -->
       <div class="panel">
-        <div class="panel-title">&#9670; Pipeline Latency</div>
+        <div class="panel-title">&#9670; 处理延迟</div>
+        <p class="panel-help">每个步骤处理一帧数据所花的时间。</p>
         <div class="latency-grid">
           <div class="latency-item">
             <div class="latency-value" id="lat-video">--</div>
-            <div class="latency-label">Video CNN</div>
+            <div class="latency-label">视频处理</div>
           </div>
           <div class="latency-item">
             <div class="latency-value" id="lat-csi">--</div>
-            <div class="latency-label">CSI CNN</div>
+            <div class="latency-label">WiFi 处理</div>
           </div>
           <div class="latency-item">
             <div class="latency-value" id="lat-fusion">--</div>
-            <div class="latency-label">Fusion</div>
+            <div class="latency-label">融合处理</div>
           </div>
           <div class="latency-item">
             <div class="latency-value" id="lat-total">--</div>
-            <div class="latency-label">Total</div>
+            <div class="latency-label">总计</div>
           </div>
         </div>
       </div>
 
       <!-- Controls -->
       <div class="panel">
-        <div class="panel-title">&#9670; Controls</div>
+        <div class="panel-title">&#9670; 演示控制</div>
         <div class="controls-row">
-          <button class="btn" id="pause-btn">⏸ Pause</button>
+          <button class="btn" id="pause-btn">⏸ 暂停</button>
         </div>
 
         <div class="slider-row">
-          <label>Confidence</label>
+          <label>最低置信度</label>
           <input type="range" id="confidence-slider" min="0" max="1" step="0.05" value="0.3">
           <span class="slider-val" id="confidence-value">0.30</span>
         </div>
 
         <div style="margin-top:10px">
-          <div class="panel-title" style="margin-bottom:6px">&#9670; Live CSI Source</div>
+          <div class="panel-title" style="margin-bottom:6px">&#9670; CSI 实时数据地址</div>
           <div style="display:flex;gap:6px">
             <input type="text" id="ws-url" placeholder="ws://localhost:3030/ws/csi"
               style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--bg-panel-border);
                      color:var(--text-primary);padding:5px 8px;border-radius:4px;font-size:11px;
                      font-family:'JetBrains Mono',monospace">
-            <button class="btn" id="connect-ws-btn">Connect</button>
+            <button class="btn" id="connect-ws-btn">连接</button>
           </div>
         </div>
       </div>
@@ -184,18 +189,18 @@
     <!-- Bottom Bar -->
     <div class="bottom-bar">
       <div>
-        RuView &middot; Dual-Modal Pose Estimation &middot;
-        Architecture: Conv2D &rarr; RuVector 6-Stage Attention (Flash+MHA+Hyperbolic+Linear+MoE+L/G) &rarr; Fusion &rarr; 26-Keypoint Pose
+        RuView &middot; 视频与 WiFi 融合姿态 &middot;
+        处理流程：特征提取 &rarr; RuVector 六步融合 &rarr; 26 关键点姿态
       </div>
       <div>
         <a href="https://github.com/ruvnet/RuView">GitHub</a> &middot;
-        CNN: <span id="cnn-backend">ruvector-cnn (loading…)</span> &middot;
+        计算引擎：<span id="cnn-backend">RuVector（正在加载…）</span> &middot;
         <a href="observatory.html">Observatory</a>
       </div>
     </div>
 
   </div><!-- /main-grid -->
 
-  <script type="module" src="pose-fusion/js/main.js?v=13"></script>
+  <script type="module" src="pose-fusion/js/main.js?v=14"></script>
 </body>
 </html>

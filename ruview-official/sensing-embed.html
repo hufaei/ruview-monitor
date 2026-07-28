@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080c14">
+  <title>RuView Sensing</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: #080c14;
+    }
+
+    .sensing-embed {
+      padding: 18px clamp(14px, 2.5vw, 30px) 28px;
+    }
+
+    #sensing.tab-content {
+      display: block;
+      padding: 0;
+    }
+
+    #sensing > h2 {
+      margin: 0 0 12px;
+    }
+  </style>
+</head>
+<body>
+  <main class="sensing-embed">
+    <section id="sensing" class="tab-content active" aria-label="实时 WiFi 感知"></section>
+  </main>
+  <script type="module" src="sensing-embed.js?v=20260728c"></script>
+</body>
+</html>
