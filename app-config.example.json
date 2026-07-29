@@ -1,4 +1,6 @@
 {
   "gatewayBaseUrl": "https://personal-project.supabase.co/functions/v1/gateway",
-  "webBaseUrl": "https://account.github.io/ruview-remote-dashboard/"
+  "webBaseUrl": "https://account.github.io/ruview-remote-dashboard/",
+  "supabaseUrl": "https://personal-project.supabase.co",
+  "supabasePublishableKey": "sb_publishable_public-browser-key"
 }
